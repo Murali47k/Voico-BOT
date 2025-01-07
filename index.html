@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Command Control</title>
+  <script>
+    function sendCommand(command) {
+      // ESP32 IP address (update with the actual IP address of your ESP32)
+      const esp32Ip = "http://192.168.59.248"; // Change this to the IP of your ESP32
+
+      // Send the command to the ESP32
+      fetch(`${esp32Ip}/command?command=${command}`, { method: 'GET' })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          }
+          throw new Error('Failed to send command');
+        })
+        .then(data => {
+          console.log('Response from ESP32:', data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+  </script>
+</head>
+<body>
+  <h1>Control Your ESP32</h1>
+  <button onclick="sendCommand('move_forward')">Move Forward</button>
+  <button onclick="sendCommand('move_backward')">Move Backward</button>
+  <button onclick="sendCommand('turn_left')">Turn Left</button>
+  <button onclick="sendCommand('turn_right')">Turn Right</button>
+</body>
+</html>
