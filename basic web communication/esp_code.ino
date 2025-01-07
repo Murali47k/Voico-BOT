@@ -15,13 +15,13 @@ void handleCommand() {
   Serial.println("Received command: " + command);
 
   // Perform actions based on the command
-  if (command == "move_forward") {
+  if (command == "forward") {
     Serial.println("Action: Moving forward");
-  } else if (command == "move_backward") {
+  } else if (command == "backward") {
     Serial.println("Action: Moving backward");
-  } else if (command == "turn_left") {
+  } else if (command == "left") {
     Serial.println("Action: Turning left");
-  } else if (command == "turn_right") {
+  } else if (command == "right") {
     Serial.println("Action: Turning right");
   } else {
     Serial.println("Unknown command");
@@ -71,4 +71,3 @@ void setup() {
 void loop() {
   server.handleClient(); // Handle incoming HTTP requests
 }
-
