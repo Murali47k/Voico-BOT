@@ -75,3 +75,54 @@
     font-size: 24px;
     color: #ffffff;
 }
+
+/* Media Query for Mobile View */
+@media (max-width: 768px) {
+    .container {
+        width: 90%; /* Make the container responsive to screen size */
+        height: 30%; /* Adjust height dynamically */
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .inst {
+        width: 80%; /* Full width for smaller screens */
+        margin-left: 10%;
+        height: 35%; /* Adjust height dynamically */
+        text-align: center;
+        border-width: 5px; /* Reduce border thickness */
+    }
+
+    .inst p {
+        padding: 15px;
+        font-size: 18px; /* Reduce font size */
+    }
+
+    .dial {
+        border-radius: 50%;
+        width: 80px;
+        height:80px;
+        margin: 15px 0 0 0; 
+        border-width: 4px; 
+        margin-left: 10%;
+    }
+
+    .status {
+        background-color: rgba(11, 54, 123, 0.871);
+        right:0px;
+        bottom: 0px;
+        margin-bottom: 25px;
+        margin-right: 50px;
+        width: 50%;
+        height: 30%;
+        position: absolute;
+        text-align: center;
+        padding-top:10px ;
+        border-radius: 10px;
+    }
+
+    .status p {
+        padding: 10px;
+        font-size: 18px; /* Reduce font size */
+    }
+}
