@@ -1,91 +1,128 @@
+
+#include <WiFi.h>
+#include <WebServer.h>
 #include <ESP32Servo.h>
-#include "BluetoothSerial.h"
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
 
-BluetoothSerial ESP_BT;
+Servo servo1;  
+Servo servo2;
+Servo servo3;
 
-Servo servo_M1;
-Servo servo_M2;
-Servo servo_M3;
+// Replace with your network credentials
+const char* ssid = "realme 11 Pro+ 5G";
+const char* password = "987654321";
 
-int servo_M1_pin = 17;   //P17 M1
-int servo_M2_pin = 18;   //P18 M2
-int servo_M3_pin = 19;   //P19 M3
+// HTTP server instance
+WebServer server(80);
 
-// Servo motor speed settings (values between 0 and 180)
-const int stopSpeed = 90;  // Stop position for servo
-const int forwardSpeed = 120;
-const int backwardSpeed = 60;
+
+
+
+// Command handler
+void handleCommand() {
+  String command = server.arg("command"); // Get command from request
+  Serial.println("Received command: " + command);
+
+  // Perform actions based on the command
+  if (command == "forward") {
+    moveForward();
+  } else if (command == "backward") {
+    moveBackward();
+  } else if (command == "left") {
+    turnLeft();
+  } else if (command == "right") {
+    turnRight();
+  } else if (command == "stop") {
+    stopMovement();
+  } else {
+    Serial.println("Unknown command");
+  }
+
+  // Add CORS header and send response
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", "Command received and executed");
+}
+
+// Handle CORS preflight requests
+void handleCors() {
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+  server.send(204); // No Content
+}
+
+// Initialize WiFi
+void initWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi ..");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print('.');
+    delay(1000);
+  }
+  Serial.println("\nConnected to WiFi");
+  Serial.println("ESP32 IP address: " + WiFi.localIP().toString());
+}
 
 void setup() {
   Serial.begin(115200);
+  initWiFi();
 
-  ESP_BT.begin("VoicoBot"); // Name of your Bluetooth interface -> will show up on your phone
+  // Handle CORS preflight requests
+  server.on("/command", HTTP_OPTIONS, handleCors);
 
-  Serial.println("The device started, now you can pair it with bluetooth!");
+  // Handle GET requests
+  server.on("/command", HTTP_GET, handleCommand);
 
-  servo_M1.attach(servo_M1_pin);
-  servo_M2.attach(servo_M2_pin);
-  servo_M3.attach(servo_M3_pin);
+  // Start the server
+  server.begin();
+  Serial.println("HTTP server started");
 
-  stopAllMotors(); // Stop all motors initially
+  servo1.attach(16);  
+  servo2.attach(17); 
+  servo3.attach(18); 
+}
+
+// Function to move forward
+void moveForward() {
+  Serial.println("Action: Moving forward");
+  servo1.write(120); // Adjust values for appropriate speed/direction
+  servo2.write(60);
+  servo3.write(90);  // Neutral for servo3
+}
+
+// Function to move backward
+void moveBackward() {
+  Serial.println("Action: Moving backward");
+  servo1.write(60);  // Reverse direction
+  servo2.write(120); // Reverse direction
+  servo3.write(90);  // Neutral for servo3
+}
+
+// Function to turn left
+void turnLeft() {
+  Serial.println("Action: Turning left");
+  servo1.write(90);  // Neutral for servo1
+  servo2.write(120); // Spin in one direction
+  servo3.write(60);  // Spin in the opposite direction
+}
+
+// Function to turn right
+void turnRight() {
+  Serial.println("Action: Turning right");
+  servo1.write(90);  // Neutral for servo1
+  servo2.write(60);  // Spin in one direction
+  servo3.write(120); // Spin in the opposite direction
+}
+
+// Function to stop movement
+void stopMovement() {
+  Serial.println("Action: Stopping movement");
+  servo1.write(90); // Stop
+  servo2.write(90); // Stop
+  servo3.write(90); // Stop
 }
 
 void loop() {
-  if (ESP_BT.available()) {
-    char command = ESP_BT.read();
-    Serial.print("Received command: ");
-    Serial.println(command);
-
-    switch (command) {
-      case 'F':
-        moveForward();
-        break;
-      case 'B':
-        moveBackward();
-        break;
-      case 'R':
-        moveRight();
-        break;
-      case 'L':
-        moveLeft();
-        break;
-      default:
-        stopAllMotors();
-        break;
-    }
-  }
-}
-
-void moveForward() {
-  servo_M1.write(stopSpeed);  // Front motor moves forward
-  servo_M2.write(forwardSpeed); // Rear left motor moves backward
-  servo_M3.write(backwardSpeed);  // Rear right motor moves forward
-}
-
-void moveBackward() {
-  servo_M1.write(stopSpeed); // Front motor moves backward
-  servo_M2.write(backwardSpeed);  // Rear left motor moves forward
-  servo_M3.write(forwardSpeed); // Rear right motor moves backward
-}
-
-void moveRight() {
-  servo_M1.write(backwardSpeed);     // Front motor stops
-  servo_M2.write(backwardSpeed); // Rear left motor moves backward
-  servo_M3.write(backwardSpeed);  // Rear right motor moves forward
-}
-
-void moveLeft() {
-  servo_M1.write(forwardSpeed);     // Front motor stops
-  servo_M2.write(forwardSpeed);  // Rear left motor moves forward
-  servo_M3.write(forwardSpeed); // Rear right motor moves backward
-}
-
-void stopAllMotors() {
-  servo_M1.write(stopSpeed);
-  servo_M2.write(stopSpeed);
-  servo_M3.write(stopSpeed);
+  server.handleClient(); // Handle incoming HTTP requests
 }
