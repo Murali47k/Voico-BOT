@@ -1,24 +1,29 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_SH110X.h>
 
-// OLED display width and height, SSD1306_128x64 is standard
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
+/* Uncomment to initialize the I2C address; uncomment only one.
+   If you get a blank screen, try the other. */
+#define i2c_Address 0x3C // Typically eBay OLED's
+//#define i2c_Address 0x3D // Typically Adafruit OLED's
 
-// Create an SSD1306 display object connected to I2C
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define OLED_RESET -1    // QT-PY / XIAO
+
+// Create an SH1106 display object connected to I2C
+Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void drawEyes(int width, int height, int leftEyeX, int rightEyeX) {
   display.clearDisplay();
 
   // Draw the left eye
   int leftEyeY = 20;
-  display.fillRect(leftEyeX, leftEyeY, width, height, SSD1306_WHITE);
+  display.fillRect(leftEyeX, leftEyeY, width, height, SH110X_WHITE);
 
   // Draw the right eye
   int rightEyeY = 20;
-  display.fillRect(rightEyeX, rightEyeY, width, height, SSD1306_WHITE);
+  display.fillRect(rightEyeX, rightEyeY, width, height, SH110X_WHITE);
 
   display.display();
 }
@@ -37,9 +42,8 @@ void eyesLeftback() {
     drawEyes(30, 30, leftEyeX, rightEyeX);
     delay(50); // Delay for smooth animation
   }
-  delay(1000); // Pause for 5 seconds after the movement
+  delay(1000); // Pause for 1 second after the movement
 }
-
 
 // Function to animate eyes moving to the right
 void eyesRight() {
@@ -55,7 +59,7 @@ void eyesRightback() {
     drawEyes(30, 30, leftEyeX, rightEyeX);
     delay(50); // Delay for smooth animation
   }
-  delay(1000); // Pause for 5 seconds after the movement
+  delay(1000); // Pause for 1 second after the movement
 }
 
 void setup() {
@@ -63,8 +67,8 @@ void setup() {
   Serial.begin(115200);
 
   // Initialize the display
-  if (!display.begin(SSD1306_PAGEADDR, 0x3C)) { // Address 0x3C for most OLEDs
-    Serial.println(F("SSD1306 allocation failed"));
+  if (!display.begin(i2c_Address)) {
+    Serial.println(F("SH1106 allocation failed"));
     for (;;);
   }
 
